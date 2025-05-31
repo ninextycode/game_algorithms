@@ -1,5 +1,4 @@
-#ifndef CFR_H
-#define CFR_H
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -10,10 +9,21 @@
 using namespace std;
 
 
-class CFR {
+class CFRPlus {
 public:
-    CFR(shared_ptr<const GameNode> root_node);
+    CFRPlus(
+        shared_ptr<const GameNode> root_node,
+        const InfoSetMap& initial_state,
+        bool initial_evaluation_run,
+        double e_soft_regsum_strategies=0
+    );
 
+    CFRPlus(
+        shared_ptr<const GameNode> root_node,
+        bool initial_evaluation_run,
+        double e_soft_regsum_strategies=0
+    );
+    
     // returns game utility at the root node for player 0 
     // if playing regretsum-based strategy
     double evaluateAndUpdateAll();
@@ -24,8 +34,6 @@ protected:
     virtual shared_ptr<InfoSet> createInfoSet(int n_actions);
 
 private:
-    const shared_ptr<const GameNode> root_node;
-
     // run with no_accumulate to initialise instantaneous regrets only
     double evaluateAndUpdateFromNode(
         const shared_ptr<const GameNode> node,
@@ -46,15 +54,7 @@ private:
     void initInfoStates();
     void initInfoStatesRecursively(const shared_ptr<const GameNode> node);
     
-    InfoSetMap infosets;
+    const shared_ptr<const GameNode> root_node_;
+    InfoSetMap infosets_;
+    double e_soft_regsum_strategies_;
 };
-
-
-class CFRPlus : public CFR {
-    using CFR::CFR;
-
-protected:
-    shared_ptr<InfoSet> createInfoSet(int n_actions) override;
-};
-
-#endif  // CFR_H

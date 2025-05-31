@@ -1,8 +1,6 @@
-#ifndef PYBIND11_PYGAMENODE
-#define PYBIND11_PYGAMENODE
+#pragma once
 
 #include "GameNode.h"
-
 
 class PyGameNode : public GameNode {
     // using GameNode::GameNode;
@@ -23,5 +21,3 @@ class PyGameNode : public GameNode {
     
     ~PyGameNode() {}
 };
-
-#endif  // PYBIND11_PYGAMENODE

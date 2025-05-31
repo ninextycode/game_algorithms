@@ -1,6 +1,4 @@
-#ifndef GAMENODE_H
-#define GAMENODE_H
-
+#pragma once
 
 #include <vector>
 #include <string>
@@ -8,8 +6,11 @@
 
 using namespace std;
 
+
 class GameNode {
 public:
+    static constexpr int CHANCE_PLAYER = -1;  // TODO
+
     // TerminalNode
     virtual bool isTerminal() const = 0;
     virtual vector<double> getUtilitiesForTerminal() const = 0;
@@ -26,5 +27,3 @@ public:
     
     virtual ~GameNode() {}
 };
-
-#endif  // GAMENODE_H

@@ -1,5 +1,4 @@
- #ifndef INFOSET_H
-#define INFOSET_H
+#pragma once
 
 #include <vector>
 #include <unordered_map>
@@ -19,38 +18,43 @@ public:
         const string& filename
     );
 
+    static void saveInfoSetMapRegretSum(
+        const InfoSetMap& infoset_map, 
+        const string& filename
+    );
+
+    static void saveInfoSetMapInstantRegret(
+        const InfoSetMap& infoset_map, 
+        const string& filename
+    );
+
+    static InfoSetMap loadInfoSetMap(
+        const string& regretsum_file,
+        const string& cumulative_strategy_file
+    );
+
     InfoSet(int n_actions);
     InfoSet(const InfoSet& other);
     
-    const vector<double>& getInstantRegrets() const;
+    const vector<double>& getInstantRegret() const;
     const vector<double>& getRegretSum() const;
-    const vector<double>& getRegretSumStrategy();
+    vector<double> getRegretSumStrategy(double e_soft=0);
     vector<double> getCumulativeStrategy();
 
     virtual void setInstantRegret(
         int action_idx, double regret
     );
 
-    virtual void accumulateRegrets(double weight);
-    void accumulateStrategy(double weight);
+    virtual void accumulateRegret(double weight);
+    void accumulateStrategy(double weight, double e_soft=0);
 
 protected:
-    vector<double> instant_regrets;
-    vector<double> regret_sum;
-    bool regret_sum_strategy_updated;
-    vector<double> regret_sum_strategy;
-    vector<double> cumulative_strategy_raw;
+    vector<double> instant_regret_;
+    vector<double> regret_sum_;
+    bool regret_sum_hard_strategy_updated_;
+    vector<double> regret_sum_hard_strategy_;
+    vector<double> cumulative_strategy_raw_;
 
     vector<double> normalizeStrategy(const vector<double>& strategy);
     vector<double> epsilonSoftStrategy(double epsilon, const vector<double>& strategy);
 };
-
-
-class InfoSetNonnegativeRegret : public InfoSet {
-    using InfoSet::InfoSet;
-
-public:
-    virtual void accumulateRegrets(double weight) override;
-};
-
-#endif  // INFOSET_H

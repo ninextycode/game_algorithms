@@ -1,22 +1,47 @@
-#include "CFR.h"
+#include "CFRPlus.h"
 #include <iostream>
 
 
-CFR::CFR(shared_ptr<const GameNode> root_node):
-    root_node(root_node)
+CFRPlus::CFRPlus(
+    shared_ptr<const GameNode> root_node,
+    const InfoSetMap& initial_infosets, 
+    bool inital_evaluation_run,
+    double e_soft_regsum_strategies
+):
+    root_node_(root_node),
+    infosets_(initial_infosets),
+    e_soft_regsum_strategies_(e_soft_regsum_strategies)
+{
+    if (inital_evaluation_run) {
+        evaluateAndUpdateFromNode(
+            root_node, 1, 1, 1, true
+        );
+    }
+}
+
+CFRPlus::CFRPlus(
+    shared_ptr<const GameNode> root_node, 
+    bool inital_evaluation_run,
+    double e_soft_regsum_strategies
+):
+    root_node_(root_node),
+    infosets_(),
+    e_soft_regsum_strategies_(e_soft_regsum_strategies)
 {
     initInfoStates();
 
-    evaluateAndUpdateFromNode(
-        root_node, 1, 1, 1, true
-    );
+    if (inital_evaluation_run) {
+        evaluateAndUpdateFromNode(
+            root_node, 1, 1, 1, true
+        );
+    }
 }
 
-void CFR::initInfoStates() {
-    initInfoStatesRecursively(root_node);
+void CFRPlus::initInfoStates() {
+    initInfoStatesRecursively(root_node_);
 }
 
-void CFR::initInfoStatesRecursively(const shared_ptr<const GameNode> node) {
+void CFRPlus::initInfoStatesRecursively(const shared_ptr<const GameNode> node) {
     if (node->isTerminal()) {
         return;
     }
@@ -25,7 +50,7 @@ void CFR::initInfoStatesRecursively(const shared_ptr<const GameNode> node) {
 
     if (!node->isChance()) {
         const string& infoset_key = node->getInfoSetKey();
-        infosets.emplace(infoset_key, createInfoSet(actions.size()));
+        infosets_.emplace(infoset_key, createInfoSet(actions.size()));
     }
 
     for (int action : actions) {
@@ -34,18 +59,18 @@ void CFR::initInfoStatesRecursively(const shared_ptr<const GameNode> node) {
 }
 
 
-InfoSetMap CFR::getStrategyInfoSets() {
+InfoSetMap CFRPlus::getStrategyInfoSets() {
     InfoSetMap infosets_copy;
-    for (const auto& [key, infoset] : infosets) {
+    for (const auto& [key, infoset] : infosets_) {
         infosets_copy[key] = make_shared<InfoSet>(*infoset);
     }
     return infosets_copy;
 }
 
 
-double CFR::evaluateAndUpdateAll() {
+double CFRPlus::evaluateAndUpdateAll() {
     return this->evaluateAndUpdateFromNode(
-        root_node, 1, 1, 1, false
+        root_node_, 1, 1, 1, false
     );
 }
 
@@ -53,7 +78,7 @@ double CFR::evaluateAndUpdateAll() {
     updates  strategy for inforset of a given node
     returns utility at a given node for player 0
 */
-double CFR::evaluateAndUpdateFromNode(
+double CFRPlus::evaluateAndUpdateFromNode(
     const shared_ptr<const GameNode> node,
     double p_past_actions_p0,
     double p_past_actions_p1,
@@ -82,18 +107,11 @@ double CFR::evaluateAndUpdateFromNode(
     
     const string& infoset_key = node->getInfoSetKey();
 
-    shared_ptr<InfoSet> infoset = infosets.at(infoset_key);
+    shared_ptr<InfoSet> infoset = infosets_.at(infoset_key);
     
+    // e_soft strategy to add weight to "impossible" events - experimental
     const vector<double> regretsum_strategy = \
-        infoset->getRegretSumStrategy();
-        
-    // cout << "infoset_key " << endl << infoset_key << endl;
-    // cout << "regretsum_strategy [";
-    // for (size_t i = 0; i < regretsum_strategy.size(); ++i) {
-    //     cout << regretsum_strategy[i];
-    //     if (i < regretsum_strategy.size() - 1) cout << ", ";
-    // }
-    // cout << "]" << endl << endl;
+        infoset->getRegretSumStrategy(e_soft_regsum_strategies_);
 
     for (int action_idx = 0; action_idx < n_available_actions; action_idx++) {
         double next_p_past_actions_p0 = p_past_actions_p0;
@@ -132,6 +150,11 @@ double CFR::evaluateAndUpdateFromNode(
         double new_regret = (
             action_utilities[action_idx] - regretsum_strategy_utility
         );
+        if (node->getCurrentPlayer() == 1) {
+            // default returned value is for player 0
+            // invert value for player 1
+            new_regret = -new_regret;
+        }
         infoset->setInstantRegret(action_idx, new_regret);
     }
 
@@ -149,14 +172,17 @@ double CFR::evaluateAndUpdateFromNode(
             cum_strategy_weight = p_past_actions_p1;
         }
 
-        infoset->accumulateRegrets(regret_weight);
-        infoset->accumulateStrategy(cum_strategy_weight);
+        infoset->accumulateRegret(regret_weight);
+        // use non-soft strategy here to accumulate the correct final strategy
+        // softness is used to achieve non-zero regrets for "impossible" events
+        // but it should be excluded from the final result 
+        infoset->accumulateStrategy(cum_strategy_weight, 0);
     }
 
     return regretsum_strategy_utility;
 }
 
-double CFR::evaluateAndUpdateFromChanceNode(
+double CFRPlus::evaluateAndUpdateFromChanceNode(
     const shared_ptr<const GameNode> node,
     double p_past_actions_p0,
     double p_past_actions_p1,
@@ -174,7 +200,6 @@ double CFR::evaluateAndUpdateFromChanceNode(
     for (int action_idx = 0; action_idx < n_available_actions; action_idx++) {
         shared_ptr<GameNode> next_node = \
             node->nextGameNode(available_actions[action_idx]);
-        
         action_utilities[action_idx] = \
             evaluateAndUpdateFromNode(
                 next_node,
@@ -191,18 +216,11 @@ double CFR::evaluateAndUpdateFromChanceNode(
         chance_node_utility += \
             chance_probs[action_idx] * action_utilities[action_idx];
     }
-
     return chance_node_utility;   
 }
 
-shared_ptr<InfoSet> CFR::createInfoSet(int n_actions) {
-    return make_shared<InfoSet>(
-        n_actions
-    );
-}
-
 shared_ptr<InfoSet> CFRPlus::createInfoSet(int n_actions) {
-    return make_shared<InfoSetNonnegativeRegret>(
+    return make_shared<InfoSet>(
         n_actions
     );
 }
