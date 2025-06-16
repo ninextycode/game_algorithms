@@ -3,77 +3,74 @@
 #include "pybind/PyGameNode.h"
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
-#include <pybind11/functional.h>
-#include <pybind11/iostream.h>
 
 namespace py = pybind11;
 
 // Implementation of the trampoline class for PyGameNode
 
-// TerminalNode methods
-bool PyGameNode::isTerminal() const {
+GameNode::Type PyGameNode::getType() const {
     PYBIND11_OVERRIDE_PURE(
-        bool,                // Return type
+        GameNode::Type,      // Return type
         GameNode,            // Parent class
-        isTerminal           // Function name
+        getType              // Function name
     );
 }
 
-vector<double> PyGameNode::getUtilitiesForTerminal() const {
-    PYBIND11_OVERRIDE_PURE(
-        vector<double>,      // Return type
-        GameNode,            // Parent class
-        getUtilitiesForTerminal  // Function name
+const vector<double>& PyGameNode::getTerminalUtilities() const {
+    PYBIND11_OVERRIDE(
+        const vector<double>&,  // Return type
+        GameNode,               // Parent class
+        getTerminalUtilities    // Function name
     );
 }
 
-// ChanceNode methods
-bool PyGameNode::isChance() const {
-    PYBIND11_OVERRIDE_PURE(
-        bool,                // Return type
-        GameNode,            // Parent class
-        isChance             // Function name
-    );
-}
 
-vector<double> PyGameNode::getChanceProbabilities() const {
-    PYBIND11_OVERRIDE_PURE(
-        vector<double>,      // Return type
-        GameNode,            // Parent class
+const vector<double>& PyGameNode::getChanceProbabilities() const {
+    PYBIND11_OVERRIDE(
+        const vector<double>&,  // Return type
+        GameNode,               // Parent class
         getChanceProbabilities  // Function name
     );
 }
 
 // DecisionNode methods
 int PyGameNode::getCurrentPlayer() const {
-    PYBIND11_OVERRIDE_PURE(
+    PYBIND11_OVERRIDE(
         int,                 // Return type
         GameNode,            // Parent class
         getCurrentPlayer     // Function name
     );
 }
 
-vector<int> PyGameNode::getAvailableActions() const {
-    PYBIND11_OVERRIDE_PURE(
-        vector<int>,         // Return type
-        GameNode,            // Parent class
-        getAvailableActions  // Function name
+const vector<int>& PyGameNode::getLegalActions() const {
+    PYBIND11_OVERRIDE(
+        const vector<int>&,     // Return type
+        GameNode,               // Parent class
+        getLegalActions         // Function name
     );
 }
 
-shared_ptr<GameNode> PyGameNode::nextGameNode(int action) const {
-    PYBIND11_OVERRIDE_PURE(
-        shared_ptr<GameNode>,  // Return type
-        GameNode,              // Parent class
-        nextGameNode,          // Function name
-        action                 // Arguments
+shared_ptr<const GameNode> PyGameNode::applyAction(int action) const {
+    PYBIND11_OVERRIDE(
+        shared_ptr<const GameNode>,  // Return type
+        GameNode,                    // Parent class
+        applyAction,                 // Function name
+        action                       // Arguments
     );
 }
 
-std::string PyGameNode::getInfoSetKey() const {
-    PYBIND11_OVERRIDE_PURE(
-        std::string,         // Return type
+string PyGameNode::getInfoSetKeyString() const {
+    PYBIND11_OVERRIDE(
+        string,              // Return type
         GameNode,            // Parent class
-        getInfoSetKey        // Function name
+        getInfoSetKeyString  // Function name
+    );
+}
+
+size_t PyGameNode::getInfoSetKeyInt() const {
+    PYBIND11_OVERRIDE(
+        size_t,              // Return type
+        GameNode,            // Parent class
+        getInfoSetKeyInt     // Function name
     );
 }

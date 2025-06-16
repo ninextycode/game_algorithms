@@ -1,6 +1,5 @@
 #pragma once
 
-#include "GameNode.h"
 #include "tictactoe/TicTacToeNode.h"
 #include "tictactoe/TicTacToeBoard.h"
 #include <string>
@@ -12,24 +11,22 @@ using namespace std;
 
 class TTTInvariant : public GameNode {
 public:
-    // Constructor for initial node
     TTTInvariant();
 
-    // Constructor that wraps a TicTacToeNode
     TTTInvariant(const TicTacToeNode& internal_ttt_node);
     
-    // GameNode interface implementation
-    bool isTerminal() const override;
-    vector<double> getUtilitiesForTerminal() const override;
-    
-    bool isChance() const override;
-    vector<double> getChanceProbabilities() const override;
+    Type getType() const override;
+
+    const vector<double>& getTerminalUtilities() const override;    
+    const vector<double>& getChanceProbabilities() const override;
     
     int getCurrentPlayer() const override;
-    vector<int> getAvailableActions() const override;
-    shared_ptr<GameNode> nextGameNode(int action) const override;
-    string getInfoSetKey() const override;
+    const vector<int>& getLegalActions() const override;
+    shared_ptr<const GameNode> applyAction(int action) const override;
     
+    string getInfoSetKeyString() const override;
+    size_t getInfoSetKeyInt() const override;
 private:
-    TicTacToeNode internal_ttt_node;
+    TicTacToeNode internal_ttt_node_;
+    vector<int> legal_invariant_actions_;
 };

@@ -1,23 +1,27 @@
 #pragma once
 
-#include "GameNode.h"
+#include "abstract/nodes/GameNode.h"
+#include <pybind11/pybind11.h>
 
 class PyGameNode : public GameNode {
-    // using GameNode::GameNode;
-
-    // TerminalNode
-    bool isTerminal() const override;
-    vector<double> getUtilitiesForTerminal() const override;
-
-    // ChanceNode
-    bool isChance() const override;
-    vector<double> getChanceProbabilities() const override;
-
-    // DecisionNode
-    int getCurrentPlayer() const override;
-    vector<int> getAvailableActions() const override;
-    shared_ptr<GameNode> nextGameNode(int action) const override;
-    std::string getInfoSetKey() const override;
+public:
+    // GameNode type interface
+    Type getType() const override;
     
-    ~PyGameNode() {}
+    // Terminal Node functions
+    const vector<double>& getTerminalUtilities() const override;
+
+    // Chance Node functions
+    const vector<double>& getChanceProbabilities() const override;
+
+    // Chance and Decision node functions
+    const vector<int>& getLegalActions() const override;
+    shared_ptr<const GameNode> applyAction(int action) const override;
+
+    // Decision Node functions
+    int getCurrentPlayer() const override;
+    string getInfoSetKeyString() const override;
+    size_t getInfoSetKeyInt() const override;
+    
+    virtual ~PyGameNode() = default;
 };

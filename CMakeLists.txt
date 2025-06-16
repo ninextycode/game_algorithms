@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(game_algorithms CXX)
 
 # Set C++ standard
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 23)
 
 # Define source files
 file(GLOB_RECURSE SOURCES "*.cpp")
