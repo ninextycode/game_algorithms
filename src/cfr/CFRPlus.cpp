@@ -3,25 +3,33 @@
 #include <Utils.h>
 
 template<typename ISKey>
-typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setRootNode(shared_ptr<const GameNode> root_node) {
+typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setRootNode(
+    shared_ptr<const GameNode> root_node
+) {
     root_node_ = root_node;
     return *this;
 }
 
 template<typename ISKey>
-typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setInitialEvaluationRun(bool initial_evaluation_run) {
+typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setInitialEvaluationRun(
+    bool initial_evaluation_run
+) {
     initial_evaluation_run_ = initial_evaluation_run;
     return *this;
 }
 
 template<typename ISKey>
-typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setESoftRegsumStrategies(double e_soft_regsum_strategies) {
+typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setESoftRegsumStrategies(
+    double e_soft_regsum_strategies
+) {
     e_soft_regsum_strategies_ = e_soft_regsum_strategies;
     return *this;
 }
 
 template<typename ISKey>
-typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setInitialState(const InfoSetMap<ISKey>& initial_state) {
+typename CFRPlus<ISKey>::Builder& CFRPlus<ISKey>::Builder::setInitialState(
+    const InfoSetMap<ISKey>& initial_state
+) {
     initial_state_ = initial_state;
     return *this;
 }
@@ -55,7 +63,7 @@ CFRPlus<ISKey>::CFRPlus(
     }
 
     if (inital_evaluation_run) {
-        evaluate();
+        evaluateRegretSum();
     }
 }
 
@@ -88,7 +96,7 @@ const InfoSetMap<ISKey>& CFRPlus<ISKey>::getStrategyInfoSets() {
 }
 
 template<typename ISKey>
-double CFRPlus<ISKey>::evaluateAndUpdate(
+double CFRPlus<ISKey>::evaluateAndUpdateRegretSum(
     bool accumulate_regsum,
     bool accumulate_strategy
 ) {
@@ -98,7 +106,7 @@ double CFRPlus<ISKey>::evaluateAndUpdate(
 }
 
 template<typename ISKey>
-double CFRPlus<ISKey>::evaluate() {
+double CFRPlus<ISKey>::evaluateRegretSum() {
     bool accumulate_regsum = false;
     bool accumulate_strategy = false;
     return this->processNode(

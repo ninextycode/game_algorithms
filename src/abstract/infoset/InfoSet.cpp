@@ -70,9 +70,6 @@ const vector<double>& InfoSet::getRegretSumStrategy() {
     return regret_sum_strategy_;
 }
 
-#include <iostream>
-using namespace std;
-
 const vector<double>& InfoSet::getCumulativeStrategy() {
     if (!cumulative_strategy_uptodate_) {
         cumulative_strategy_normalized_ =\
@@ -80,4 +77,14 @@ const vector<double>& InfoSet::getCumulativeStrategy() {
         cumulative_strategy_uptodate_ = true;
     }
     return cumulative_strategy_normalized_;
+}
+
+
+
+vector<double> InfoSet::getRegretSumStrategy() const {
+    return strategy_utils::normalizeStrategy(regret_sum_);
+}
+
+vector<double> InfoSet::getCumulativeStrategy() const {
+    return strategy_utils::normalizeStrategy(cumulative_strategy_not_norm_);
 }

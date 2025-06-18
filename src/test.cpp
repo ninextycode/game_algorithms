@@ -36,7 +36,7 @@ void training(int n_steps) {
     for (int i = 0; i < n_steps; i++) {
         cout << "step " << i + 1 << " of " << n_steps << endl;
         // dont accumulate strategy until half of the training steps
-        cfr.evaluateAndUpdate(true, i > n_steps / 2);
+        cfr.evaluateAndUpdateRegretSum(true, i > n_steps / 2);
         auto& step_info_sets = cfr.getStrategyInfoSets();
         auto metric = infoset_utils::calculateMetric(step_info_sets);
         cout << "sum_positive_instant_regrets: " 
@@ -70,7 +70,7 @@ void read_results() {
     auto x_towin_board = TicTacToeBoard(array<int, 9>({
         -1,  -1, -1,
         -1,  0, -1,
-        -1,  1, -1
+        1,  -1, -1
     }));
 
     vector<string> board_names = {
@@ -112,7 +112,7 @@ void read_results() {
                 .setRootNode(node)
                 // .setESoftRegsumStrategies(0.2)
                 .buildCfr()
-                .evaluate();
+                .evaluateRegretSum();
         
         cout << "Value X player: " << x_board_value << endl;
         cout << endl;

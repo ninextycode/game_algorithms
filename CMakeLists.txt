@@ -5,17 +5,18 @@ project(game_algorithms CXX)
 set(CMAKE_CXX_STANDARD 23)
 
 # Define source files
-file(GLOB_RECURSE SOURCES "*.cpp")
-list(FILTER SOURCES EXCLUDE REGEX "src/pybind/.*\.cpp$")
+file(GLOB_RECURSE GAME_ALGORITHMS_SOURCES "*.cpp")
+list(FILTER GAME_ALGORITHMS_SOURCES EXCLUDE REGEX "src/test.cpp$")
+list(FILTER GAME_ALGORITHMS_SOURCES EXCLUDE REGEX "src/pybind/.*\.cpp$")
 
 # Define include directories
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # Create shared library
-add_library(${PROJECT_NAME} SHARED ${SOURCES})
+add_library(game_algorithms SHARED ${GAME_ALGORITHMS_SOURCES})
 
 # Set public include directories for targets that link against this library
-target_include_directories(${PROJECT_NAME} PUBLIC
+target_include_directories(game_algorithms PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
 
@@ -37,4 +38,4 @@ set_target_properties(game_algorithms_py PROPERTIES
 
 # Add the test executable
 add_executable(test_game_algorithms src/test.cpp)
-target_link_libraries(test_game_algorithms PRIVATE ${PROJECT_NAME})
+target_link_libraries(test_game_algorithms PRIVATE game_algorithms)

@@ -23,6 +23,8 @@ public:
     const vector<double>& getRegretSum() const;
     const vector<double>& getRegretSumStrategy();
     const vector<double>& getCumulativeStrategy();
+    vector<double> getRegretSumStrategy() const;
+    vector<double> getCumulativeStrategy() const;
 
     virtual void setInstantRegret(
         int action_idx, double regret

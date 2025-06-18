@@ -33,16 +33,19 @@ public:
         const InfoSetMap<ISKey>& initial_state = InfoSetMap<ISKey>()
     );
     
+
     // returns game utility at the root node for player 0 
     // if playing regretsum-based strategy
     // accumulates regrets in infosets
-    double evaluateAndUpdate(
+    // (!) Note: evaluation is node using regretsum strategies, not cumulative strategy
+    double evaluateAndUpdateRegretSum(
         bool accumulate_regsum = true,
         bool accumulate_strategy = true
     );
 
     // does not accumulate regrets in infosets
-    double evaluate();
+    // (!) Note: evaluation is node using regretsum strategies, not cumulative strategy
+    double evaluateRegretSum();
     
     const InfoSetMap<ISKey>& getStrategyInfoSets();
     
