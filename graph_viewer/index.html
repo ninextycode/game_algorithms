@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>JSON Graph Visualizer</title>
+
+    <!-- page‑wide stylesheet -->
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+
+  <body>
+    <header>JSON‑to‑Graph Visualizer</header>
+
+    <section id="panel">
+      <input type="file" id="filePicker" accept=".json,.graphson,.jgf" />
+      <span>…or drag &amp; drop a file anywhere on the page</span>
+    </section>
+
+    <div id="cy"></div>
+
+    <!-- TypeScript bundle -->
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

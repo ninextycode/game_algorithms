@@ -1,3 +1,25 @@
+/**
+ * @brief Decision randomization wrapper system for game tree nodes
+ * 
+ * This header defines a comprehensive wrapper system that adds decision randomization
+ * capabilities to existing game tree nodes. The system allows for probabilistic
+ * replacement of strategic decisions with random action selection, which is useful
+ * for creating diverse training data, implementing exploration strategies, or
+ * simulating sub-optimal play.
+ * 
+ * The wrapper hierarchy consists of:
+ * - WrapNode: Base wrapper providing common functionality
+ * - RandomizerWrapNode: Entry point that decides between normal/random play
+ * - NonRandomDecisionWrapNode: Preserves original decision-making behavior
+ * - RandomDecisionWrapNode: Replaces decisions with uniform random selection
+ * - ChanceWrapNode: Passes through original chance node behavior unchanged
+ * 
+ * The randomization process works by wrapping the original game tree with a layer
+ * that probabilistically chooses between executing the original strategy or
+ * selecting actions uniformly at random. This maintains the original game structure
+ * while adding controllable randomness to decision points.
+ * 
+ */
 #pragma once
 
 #include <vector>

@@ -7,6 +7,10 @@
 #include <typeinfo>
 
 
+string GameNode::toString() const {
+    return getTypeString();
+}
+
 string GameNode::getTypeString() const {
     Type type = this->getType();
     switch (type) {
@@ -24,7 +28,7 @@ const vector<double>& GameNode::getTerminalUtilities() const {
     if (getType() == Type::Terminal) {
         throwMissingFnException("getTerminalUtilities");
     } else {
-        throwWrongFnException("getTerminalUtilities");
+        throwWrongNodeTypeFnException("getTerminalUtilities");
     }
 }
 
@@ -32,7 +36,7 @@ const vector<double>& GameNode::getChanceProbabilities() const {
     if (getType() == Type::Chance) {
         throwMissingFnException("getChanceProbabilities");
     } else {
-        throwWrongFnException("getChanceProbabilities");
+        throwWrongNodeTypeFnException("getChanceProbabilities");
     }
 }
 
@@ -40,7 +44,7 @@ const vector<int>& GameNode::getLegalActions() const {
     if (getType() == Type::Chance || getType() == Type::Decision) {
         throwMissingFnException("getLegalActions");
     } else {
-        throwWrongFnException("getLegalActions");
+        throwWrongNodeTypeFnException("getLegalActions");
     }
 }
 
@@ -48,15 +52,19 @@ shared_ptr<const GameNode> GameNode::applyAction(int action) const {
     if (getType() == Type::Chance || getType() == Type::Decision) {
         throwMissingFnException("applyAction");
     } else {
-        throwWrongFnException("applyAction");
+        throwWrongNodeTypeFnException("applyAction");
     }
+}
+
+string GameNode::actionToString(int action) const {
+    return to_string(action);
 }
 
 int GameNode::getCurrentPlayer() const {
     if (getType() == Type::Decision) {
         throwMissingFnException("getCurrentPlayer");
     } else {
-        throwWrongFnException("getCurrentPlayer");
+        throwWrongNodeTypeFnException("getCurrentPlayer");
     }
 }
 
@@ -64,7 +72,7 @@ string GameNode::getInfoSetKeyString() const {
     if (getType() == Type::Decision) {
         throwMissingFnException("getInfoSetKeyString");
     } else {
-        throwWrongFnException("getInfoSetKeyString");
+        throwWrongNodeTypeFnException("getInfoSetKeyString");
     }
 }
 
@@ -72,7 +80,7 @@ size_t GameNode::getInfoSetKeyInt() const {
     return hash<string>{}(getInfoSetKeyString());
 }
 
-void GameNode::throwWrongFnException(const string& funcName) const {
+void GameNode::throwWrongNodeTypeFnException(const string& funcName) const {
     throw logic_error(
         string("Node of class ") + cpp_utils::demangle(typeid(*this).name()) + ", " +
         "of type " + this->getTypeString() + " does not implement " + funcName + "()"

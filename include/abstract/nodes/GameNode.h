@@ -59,15 +59,19 @@ public:
     virtual ~GameNode() = default;
 
     string getTypeString() const;
+    
+    // toString and actionToString are logging helper functions
+    virtual string toString() const;
 
-    // Terminal Node function
+    // Function for Terminal Nodes
     virtual const vector<double>& getTerminalUtilities() const;
-    // Chance Node function
+    // Function for Chance Nodes
     virtual const vector<double>& getChanceProbabilities() const;
-    // Chance and Decision node function
+    // Functions for both Chance and Decision Nodes
     virtual const vector<int>& getLegalActions() const;
     virtual shared_ptr<const GameNode> applyAction(int action) const;
-    // Decision Node functions
+    virtual string actionToString(int action) const;
+    // Functions for Decision Nodes
     virtual int getCurrentPlayer() const;
     virtual string getInfoSetKeyString() const;
     virtual size_t getInfoSetKeyInt() const;
@@ -76,8 +80,11 @@ public:
     Key getInfoSetKey() const = delete;
 
 protected:
+    // Throws an exception when a function is called on a node type that doesn't support it
     [[noreturn]]
-    void throwWrongFnException(const string& funcName) const;
+    void throwWrongNodeTypeFnException(const string& funcName) const;
+ 
+    // Throws an exception when a required function implementation is missing
     [[noreturn]]
     void throwMissingFnException(const string& funcName) const;
 };

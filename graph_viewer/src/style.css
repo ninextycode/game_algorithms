@@ -1,0 +1,14 @@
+/* global layout */
+body   { margin: 0; font-family: system-ui, sans-serif; }
+header { padding: 1rem; background: #001f3f; color: #fff; font-size: 1.1rem; }
+
+#panel { padding: 0.8rem; background: #f4f4f4; }
+#cy    { width: 100%; height: calc(100vh - 9rem); } /* fill remaining viewport */
+
+input[type="file"] { margin-right: 1rem; }
+
+/* visual cue while dragging a file over the page */
+body.dragover #cy {
+  outline: 3px dashed #0074D9;
+  outline-offset: -6px;
+}
