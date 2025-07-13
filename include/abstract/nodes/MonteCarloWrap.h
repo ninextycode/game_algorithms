@@ -13,13 +13,17 @@
 #pragma once
 
 #include "abstract/nodes/GameNode.h"
-
+#include <queue>
 
 using namespace std;
 
 class MonteCarloWrap : public GameNode {
 public:
-    MonteCarloWrap(shared_ptr<const GameNode> node, uint64_t seed = 0);
+    MonteCarloWrap(
+        shared_ptr<const GameNode> node,
+        queue<int> preselected_chance_actions = {},
+        uint64_t seed = 0
+    );
 
     Type getType() const override;
 
@@ -35,7 +39,15 @@ public:
     string getInfoSetKeyString() const override;
     size_t getInfoSetKeyInt() const override;
 
+    string toString() const override;
+    string actionToString(int action) const override;
+
+    uint64_t getSeed() const;
+
 private:
-    shared_ptr<const GameNode> non_chance_node_;
+    shared_ptr<const GameNode> wrapped_node_;
     uint64_t seed_;
+    queue<int> preselected_chance_actions_;
+    vector<int> chance_legal_action_;
+    static inline const vector<double> chance_probability{1.0}; 
 };

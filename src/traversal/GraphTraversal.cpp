@@ -80,17 +80,12 @@ void GraphTraversal::exportGraph(const string& filename) const {
     for (size_t parent_idx = 0; parent_idx < nodes_.size(); ++parent_idx) {
         auto it = parent_to_children_.find(parent_idx);
         if (it != parent_to_children_.end()) {
-            const auto& children = it->second;
-            for (const auto& child_pair : children) {
-                int action = child_pair.first;
-                size_t child_idx = child_pair.second;
-                
+            for (const auto& [action, child_idx] : it->second) {
                 if (!first_edge) file << ",\n";
-                first_edge = false;
-                
                 file << "    " << createEdgeString(
                     parent_idx, action, child_idx
                 );
+                first_edge = false;
             }
         }
     }
@@ -105,9 +100,21 @@ string GraphTraversal::createNodeString(size_t node_idx) const {
     const shared_ptr<const GameNode> node = nodes_[node_idx];
     ostringstream oss;
     oss << "{\"id\": " << node_idx \
-        << ", \"type\": \"" << node->getTypeString() \
-        << ", \"representation\": \"" << node->toString() \
-        << "\", \"address\": \"" << node.get() << "\"";
+        << ", \"type\": \"" << node->getTypeString() << "\"" \
+        << ", \"representation\": \"" << escape(node->toString()) << "\"" \
+        << ", \"address\": \"" << node.get() << "\"";
+    
+    // Add n_children and actions for non-terminal nodes
+    if (node->getType() != GameNode::Type::Terminal) {
+        const auto& legal_actions = node->getLegalActions();
+        oss << ", \"n_children\": " << legal_actions.size();
+        oss << ", \"actions\": [";
+        for (size_t j = 0; j < legal_actions.size(); ++j) {
+            if (j > 0) oss << ", ";
+            oss << legal_actions[j];
+        }
+        oss << "]";
+    }
     
     if (node->getType() == GameNode::Type::Terminal) {
         const auto& utilities = node->getTerminalUtilities();
@@ -148,8 +155,41 @@ string GraphTraversal::createEdgeString(
         << ", \"action\": " << action;
 
     string action_str = parent->actionToString(action);
-    oss << ", \"action_string\": \"" << action_str << "\"";
+    oss << ", \"action_string\": \"" << escape(action_str) << "\"";
 
     oss << "}";
     return oss.str();
+}
+
+string GraphTraversal::escape(const string& str) {
+    string result;
+    result.reserve(str.size() * 2); // Reserve space to avoid frequent reallocations
+    
+    for (char c : str) {
+        switch (c) {
+            case '\n':
+                result += "\\n";
+                break;
+            case '\r':
+                result += "\\r";
+                break;
+            case '\t':
+                result += "\\t";
+                break;
+            case '"':
+                result += "\\\"";
+                break;
+            case '\\':
+                result += "\\\\";
+                break;
+            case '/':
+                result += "\\/";
+                break;
+            default:
+                result += c;
+                break;
+        }
+    }
+    
+    return result;
 }

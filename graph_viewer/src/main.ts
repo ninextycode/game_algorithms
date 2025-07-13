@@ -1,13 +1,47 @@
 import cytoscape, { type ElementDefinition } from 'cytoscape';
 import fcose from 'cytoscape-fcose';
+import dagre from 'cytoscape-dagre';
 import graphStyles from './graph_style';      // styles moved to their own file
 
 cytoscape.use(fcose);                         // register the layout plugin
+cytoscape.use(dagre);                         // register the dagre layout plugin
+
+/* ---------- Helper function for left-aligned text formatting ---------- */
+function formatLeftAligned(text: string): string {
+  if (!text) return text;
+  
+  const lines = text.split('\n');
+  if (lines.length <= 1) return text;
+  
+  // Find the maximum line length
+  const maxLength = Math.max(...lines.map(line => line.length));
+  
+  // Pad each line to match the maximum length
+  const paddedLines = lines.map(line => {
+    return '|' + line.padEnd(maxLength, ' ') + '|';
+  });
+  
+  return paddedLines.join('\n');
+}
+
+/* ---------- Tree layout configuration ---------- */
+const treeLayout = {
+  name: 'dagre',
+  directed: true,
+  padding: 30,
+  spacingFactor: 1.0,
+  animate: true,
+  animationDuration: 500,
+  rankDir: 'TB', // Top to Bottom
+  ranker: 'network-simplex',
+  nodeSep: 30,    // Horizontal spacing between nodes at same level
+  rankSep: 20     // Vertical spacing between levels (reduced from 100)
+};
 
 /* ---------- 1. create an empty graph ---------- */
 const cy = cytoscape({
   container: document.getElementById('cy') as HTMLElement,
-  style: graphStyles,                         // externalised Cytoscape styles
+  style: graphStyles,                         // externalized Cytoscape styles
   layout: { name: 'grid' }                    // placeholder until data arrives
 });
 
@@ -26,11 +60,44 @@ function toElements(data: any): ElementDefinition[] {
       // Already Cytoscape‑shaped
       if (item.group === 'nodes' || item.group === 'edges') return item;
 
-      // JGF node
-      if (item.id && !item.source && !item.target) {
+      // Game Tree node (has type, representation, address)
+      if (item.type && item.representation !== undefined && item.id !== undefined && !item.source && !item.target) {
         return {
           group: 'nodes',
-          data: { id: item.id, label: item.label || item.id, ...item }
+          data: { 
+            id: item.id.toString(), 
+            label: formatLeftAligned(item.representation),
+            nodeType: item.type,
+            address: item.address,
+            ...item
+          }
+        };
+      }
+
+      // Game Tree edge (has source, target, action, action_string)
+      if (item.source !== undefined && item.target !== undefined && item.action !== undefined) {
+        return {
+          group: 'edges',
+          data: {
+            id: item.id || `${item.source}-${item.target}`,
+            source: item.source.toString(),
+            target: item.target.toString(),
+            label: item.action_string || item.action.toString(),
+            action: item.action,
+            action_string: item.action_string
+          }
+        };
+      }
+
+      // JGF node
+      if (item.id !== undefined && !item.source && !item.target) {
+        return {
+          group: 'nodes',
+          data: { 
+            id: item.id.toString(), 
+            label: formatLeftAligned(item.label || item.id.toString()), 
+            ...item 
+          }
         };
       }
 
@@ -40,8 +107,8 @@ function toElements(data: any): ElementDefinition[] {
           group: 'edges',
           data: {
             id: item.id || `${item.source}-${item.target}`,
-            source: item.source,
-            target: item.target,
+            source: item.source.toString(),
+            target: item.target.toString(),
             label: item.label || '',
             ...item
           }
@@ -53,8 +120,8 @@ function toElements(data: any): ElementDefinition[] {
         return {
           group: 'nodes',
           data: {
-            id: item.id,
-            label: item.properties?.label ?? item.id,
+            id: item.id.toString(),
+            label: formatLeftAligned(item.properties?.label ?? item.id.toString()),
             ...item.properties
           }
         };
@@ -64,8 +131,8 @@ function toElements(data: any): ElementDefinition[] {
           group: 'edges',
           data: {
             id: item.id,
-            source: item.outV,
-            target: item.inV,
+            source: item.outV.toString(),
+            target: item.inV.toString(),
             label: item.label
           }
         };
@@ -77,9 +144,15 @@ function toElements(data: any): ElementDefinition[] {
 async function loadFile(file: File) {
   try {
     const text = await file.text();
-    const data = text.trim().includes('\n')
-      ? text.trim().split('\n').map(line => JSON.parse(line))      // GraphSON lines
-      : JSON.parse(text);                            // JGF or Cytoscape elements
+    
+    // Try to parse as regular JSON first
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      // If that fails, try parsing as GraphSON (line-by-line JSON)
+      data = text.trim().split('\n').map(line => JSON.parse(line));
+    }
 
     const elements = toElements(data);
 
@@ -90,7 +163,14 @@ async function loadFile(file: File) {
 
     cy.elements().remove();
     cy.add(elements);
-    cy.layout({ name: 'fcose' }).run();
+    
+    // Debug: Log the elements to see what we're working with
+    console.log('Loaded elements:', elements);
+    console.log('Nodes:', elements.filter(e => e.group === 'nodes'));
+    console.log('Edges:', elements.filter(e => e.group === 'edges'));
+    
+    // Use hierarchical layout for tree structure (top to bottom)
+    cy.layout(treeLayout).run();
   } catch (err: any) {
     alert(`Could not parse file: ${err.message}`);
   }
@@ -123,20 +203,22 @@ document.addEventListener('drop', e => {
   if (file) loadFile(file);
 });
 
-/* ---------- 6. optional auto‑load test.json ---------- */
+/* ---------- 6. optional auto‑load poker_graph.json ---------- */
 async function loadTestFile() {
   try {
-    const r = await fetch('./test.json');
+    const r = await fetch('./poker_graph.json');
     if (r.ok) {
       const data = await r.json();
       const elements = toElements(data);
       if (elements.length) {
         cy.add(elements);
-        cy.layout({ name: 'fcose' }).run();
+        
+        // Use hierarchical layout for tree structure (top to bottom)
+        cy.layout(treeLayout).run();
       }
     }
   } catch {
-    /* silently ignore if test.json isn’t present */
+    /* silently ignore if poker_graph.json isn’t present */
   }
 }
 

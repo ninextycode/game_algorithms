@@ -57,4 +57,6 @@ private:
         int action, 
         size_t child_idx
     ) const;
+    
+    static string escape(const string& str);
 };

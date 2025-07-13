@@ -62,6 +62,8 @@ public:
     
     // toString and actionToString are logging helper functions
     virtual string toString() const;
+    // action to string only makes sense for non-terminal nodes
+    virtual string actionToString(int action) const;
 
     // Function for Terminal Nodes
     virtual const vector<double>& getTerminalUtilities() const;
@@ -70,7 +72,6 @@ public:
     // Functions for both Chance and Decision Nodes
     virtual const vector<int>& getLegalActions() const;
     virtual shared_ptr<const GameNode> applyAction(int action) const;
-    virtual string actionToString(int action) const;
     // Functions for Decision Nodes
     virtual int getCurrentPlayer() const;
     virtual string getInfoSetKeyString() const;
