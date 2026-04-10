@@ -12,3 +12,33 @@ body.dragover #cy {
   outline: 3px dashed #0074D9;
   outline-offset: -6px;
 }
+
+/* tooltip for infoset display on hover */
+#infoset-tooltip {
+  position: absolute;
+  background: #1a1a2e;
+  color: #eaf6ff;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+  white-space: pre;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0;
+  transition: opacity 0.15s ease-in-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border: 1px solid #3a3a5c;
+  max-width: 400px;
+  overflow: hidden;
+}
+
+#infoset-tooltip.visible {
+  opacity: 1;
+}
+
+#infoset-tooltip .tooltip-label {
+  color: #7eb8da;
+  font-weight: 600;
+  margin-bottom: 4px;
+}

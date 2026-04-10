@@ -19,7 +19,7 @@ const graphStyles: StylesheetCSS[] = [
       'height': 'label',
       'shape': 'rectangle',
       'text-wrap': 'wrap',
-      'text-max-width': '160px',
+      'text-max-width': '400px',
       'padding': '4px',
       'text-margin-y': 2
     }

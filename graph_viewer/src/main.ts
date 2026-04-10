@@ -203,7 +203,77 @@ document.addEventListener('drop', e => {
   if (file) loadFile(file);
 });
 
-/* ---------- 6. optional auto‑load poker_graph.json ---------- */
+/* ---------- 6. Infoset tooltip on hover (5s delay) ---------- */
+const tooltip = document.createElement('div');
+tooltip.id = 'infoset-tooltip';
+document.body.appendChild(tooltip);
+
+let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
+let lastMousePos = { x: 0, y: 0 };
+
+function positionTooltip(clientX: number, clientY: number) {
+  const offsetX = 15;
+  const offsetY = 15;
+  
+  let left = clientX + offsetX;
+  let top = clientY + offsetY;
+  
+  const tooltipRect = tooltip.getBoundingClientRect();
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  
+  if (left + tooltipRect.width > viewportWidth) {
+    left = clientX - tooltipRect.width - offsetX;
+  }
+  if (top + tooltipRect.height > viewportHeight) {
+    top = clientY - tooltipRect.height - offsetY;
+  }
+  
+  tooltip.style.left = `${left}px`;
+  tooltip.style.top = `${top}px`;
+}
+
+cy.on('mouseover', 'node', (event) => {
+  const node = event.target;
+  const data = node.data();
+  const pos = event.originalEvent as MouseEvent;
+  lastMousePos = { x: pos.clientX, y: pos.clientY };
+  
+  // Check for infoset-related fields
+  const infoset = data.infoset ?? data.infoset_string ?? data.info_set ?? null;
+  
+  if (infoset !== null && infoset !== undefined && infoset !== '') {
+    // Clear any existing timeout
+    if (hoverTimeout) clearTimeout(hoverTimeout);
+    
+    // Set content immediately but show after 5s delay
+    tooltip.innerHTML = `<div class="tooltip-label">Infoset</div>${infoset}`;
+    
+    hoverTimeout = setTimeout(() => {
+      positionTooltip(lastMousePos.x, lastMousePos.y);
+      tooltip.classList.add('visible');
+    }, 2000);
+  }
+});
+
+cy.on('mousemove', 'node', (event) => {
+  const pos = event.originalEvent as MouseEvent;
+  lastMousePos = { x: pos.clientX, y: pos.clientY };
+  
+  if (tooltip.classList.contains('visible')) {
+    positionTooltip(pos.clientX, pos.clientY);
+  }
+});
+
+cy.on('mouseout', 'node', () => {
+  if (hoverTimeout) {
+    clearTimeout(hoverTimeout);
+    hoverTimeout = null;
+  }
+  tooltip.classList.remove('visible');
+});
+
+/* ---------- 7. optional auto‑load poker_graph.json ---------- */
 async function loadTestFile() {
   try {
     const r = await fetch('./poker_graph.json');
@@ -218,7 +288,7 @@ async function loadTestFile() {
       }
     }
   } catch {
-    /* silently ignore if poker_graph.json isn’t present */
+    /* silently ignore if poker_graph.json isn't present */
   }
 }
 

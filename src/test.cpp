@@ -1,9 +1,9 @@
 #include <iostream>
 #include <memory>
-#include "cfr/CFRPlus.h"
-#include "tictactoe/TTTInvariant.h"
-#include "abstract/nodes/Randomizer.h"
-#include "abstract/infoset/InfoSetUtils.h"
+#include "cfr/cfr_plus.h"
+#include "tictactoe/ttt_invariant.h"
+#include "abstract/nodes/randomizer.h"
+#include "abstract/regret_data/regret_data_utils.h"
 #include <chrono>
 
 using namespace std;
@@ -15,7 +15,7 @@ void training(int n_steps) {
     // );
     
 
-    InfoSetMap<string> map_str = infoset_utils::SaveLoader::loadInfoSetMap<string>(
+    RegretDataMap<string> map_str = regret_data_utils::SaveLoader::loadInfoSetMap<string>(
         "training_output/tic_tac_toe_cpp_regretsum.json",
         "training_output/tic_tac_toe_cpp_strategy.json"
     );
@@ -38,7 +38,7 @@ void training(int n_steps) {
         // dont accumulate strategy until half of the training steps
         cfr.evaluateAndUpdateRegretSum(true, i > n_steps / 2);
         auto& step_info_sets = cfr.getStrategyInfoSets();
-        auto metric = infoset_utils::calculateMetric(step_info_sets);
+        auto metric = regret_data_utils::calculateMetric(step_info_sets);
         cout << "sum_positive_instant_regrets: " 
              << metric.sum_positive_instant_regrets << endl;
     }
@@ -47,17 +47,17 @@ void training(int n_steps) {
     auto& strategy_info_sets = cfr.getStrategyInfoSets();
 
     // Save the strategy to files
-    infoset_utils::SaveLoader::saveInfoSetMapRegretSum<>(
+    regret_data_utils::SaveLoader::saveInfoSetMapRegretSum<>(
         strategy_info_sets, "training_output/tic_tac_toe_cpp_regretsum.json"
     );
-    infoset_utils::SaveLoader::saveInfoSetMapStrategy<>(
+    regret_data_utils::SaveLoader::saveInfoSetMapStrategy<>(
         strategy_info_sets, "training_output/tic_tac_toe_cpp_strategy.json"
     );
 }
 
 
 void read_results() {
-    auto map_str = infoset_utils::SaveLoader::loadInfoSetMap<string>(
+    auto map_str = regret_data_utils::SaveLoader::loadInfoSetMap<string>(
         "training_output/tic_tac_toe_cpp_regretsum.json",
         "training_output/tic_tac_toe_cpp_strategy.json"
     );
